@@ -37,4 +37,26 @@ impl Employee {
         }
         
     }
+
+    pub async fn get_emp_by_id(id: i32, pool: &Pool) -> Result<Employee, MyError> {
+        let conn = pool.get().await.unwrap();
+        let stmt = conn.prepare_cached("SELECT * FROM employee WHERE id = $1").await.unwrap();
+        let row = conn.query_one(&stmt, &[&id]).await;
+        match row {
+            Ok(row) => {
+            
+               let e = Employee { 
+                   id: row.get("id"), 
+                   first_name: row.get("first_name"), 
+                   last_name: row.get("last_name"), 
+                   departement: row.get("department"), 
+                   salary: row.get("salary"), 
+                   age: row.get("age"),
+                   created_on: row.get("created_on"),
+                };
+                Ok(e)
+            },
+            Err(_) => Err(MyError::NotFound)
+        }
+    }
 }

@@ -2,7 +2,7 @@ mod services;
 mod user;
 mod util;
 use services::health_check_service::{do_health_check};
-use services::employee_service::get_all_employee;
+use services::employee_service::{get_all_employee,get_employee_by_id};
 use actix_web::{App, HttpServer,web};
 use deadpool_postgres::{Config, RecyclingMethod, ManagerConfig, Runtime, PoolConfig};
 use tokio_postgres::NoTls;
@@ -30,6 +30,7 @@ async fn main() -> std::io::Result<()> {
         .app_data(web::Data::new(pool.clone()))
         .service(do_health_check)
         .service(get_all_employee)
+        .service(get_employee_by_id)
    })
    .bind(("127.0.0.1", 8080))?
    .run()

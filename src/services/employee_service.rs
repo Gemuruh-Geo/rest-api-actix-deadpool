@@ -12,3 +12,13 @@ async fn get_all_employee(db: web::Data<Pool>) -> impl Responder {
     }
     
 }
+#[get("/employee/{id}")]
+async fn get_employee_by_id(params: web::Path<i32>, db: web::Data<Pool>) -> impl Responder {
+    let id = params.into_inner();
+    let emp_result = Employee::get_emp_by_id(id, db.get_ref()).await;
+    match emp_result {
+        Ok(emp) => HttpResponse::Ok().json(emp),
+        Err(_) => HttpResponse::NotFound().body("Not Found")
+    }
+
+}

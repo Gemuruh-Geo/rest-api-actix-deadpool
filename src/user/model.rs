@@ -1,4 +1,9 @@
+use crate::util::my_error::MyError;
+use chrono:: NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use deadpool_postgres::Pool;
+use tokio_postgres::Row;
+
 #[derive(Serialize, Deserialize)]
 pub struct Employee {
     pub id: i32,
@@ -7,4 +12,29 @@ pub struct Employee {
     pub departement: String,
     pub salary: i32,
     pub age: i32,
+    pub created_on: NaiveDateTime,
+}
+impl Employee {
+    pub async fn get_all_employee(pool: &Pool) -> Result<Vec<Employee>, MyError> {
+        let conn = pool.get().await.unwrap();
+        let stmt = conn.prepare_cached("SELECT * FROM employee").await.unwrap();
+        let rows:Vec<Row> = conn.query(&stmt, &[]).await.unwrap();
+        let employees: Vec<Employee> = rows.iter().map(|row| -> Employee {
+            Employee { 
+                id: row.get("id"), 
+                first_name: row.get("first_name"), 
+                last_name: row.get("last_name"), 
+                departement: row.get("department"), 
+                salary: row.get("salary"), 
+                age: row.get("age"),
+                created_on: row.get("created_on"),
+            }
+        }).collect();
+        if employees.is_empty() {
+            Err(MyError::NotFound)
+        }else {
+            Ok(employees)
+        }
+        
+    }
 }

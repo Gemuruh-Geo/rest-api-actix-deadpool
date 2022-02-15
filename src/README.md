@@ -1,0 +1,1 @@
+Simple implementation of REST service using Actix web, deadpool and tokio-postgres
